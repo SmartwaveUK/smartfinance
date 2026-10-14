@@ -1,0 +1,5 @@
+/* Withdrawal validation is stored at dashboard level but displayed in the active modal. */
+.dash-content > .form-error { display: none; }
+.modal-validation-error{margin:16px 0 0;color:#b33830;font-size:13px;line-height:1.4}
+.withdraw-modal .field-error{border-color:#c23b32!important;box-shadow:0 0 0 1px #c23b32}
+

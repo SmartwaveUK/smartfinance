@@ -1,0 +1,9 @@
+{
+  "/api/admin/clients/route": "app/api/admin/clients/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/admin/clients/[id]/withdrawal-pins/route": "app/api/admin/clients/[id]/withdrawal-pins/route.js",
+  "/api/withdrawals/route": "app/api/withdrawals/route.js",
+  "/admin/page": "app/admin/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/page": "app/page.js"
+}
