@@ -1,9 +1,9 @@
 {
-  "/api/admin/clients/route": "/api/admin/clients",
-  "/_not-found/page": "/_not-found",
   "/api/admin/clients/[id]/withdrawal-pins/route": "/api/admin/clients/[id]/withdrawal-pins",
+  "/_not-found/page": "/_not-found",
+  "/api/admin/clients/route": "/api/admin/clients",
   "/api/withdrawals/route": "/api/withdrawals",
   "/admin/page": "/admin",
-  "/dashboard/page": "/dashboard",
-  "/page": "/"
+  "/page": "/",
+  "/dashboard/page": "/dashboard"
 }

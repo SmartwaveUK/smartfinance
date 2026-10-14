@@ -6,11 +6,14 @@ function getClient() {
   return url && key ? createBrowserClient(url, key) : null
 }
 
-export async function signIn(email: string, password: string): Promise<string | null | 'demo'> {
+export async function signIn(email: string, password: string): Promise<{ error?: string; destination?: '/dashboard' | '/admin'; demo?: true }> {
   const supabase = getClient()
-  if (!supabase) return 'demo'
+  if (!supabase) return { demo: true, destination: '/dashboard' }
   const { error } = await supabase.auth.signInWithPassword({ email, password })
-  return error?.message ?? null
+  if (error) return { error: error.message }
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  if (userError || !user) return { error: 'Your session could not be verified. Please try again.' }
+  return { destination: user.app_metadata?.role === 'admin' ? '/admin' : '/dashboard' }
 }
 
 export async function signOut(): Promise<void> {

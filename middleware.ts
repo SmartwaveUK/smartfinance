@@ -30,6 +30,18 @@ export async function middleware(request: NextRequest) {
   }
 
   const appMetadata = claims?.app_metadata as { role?: string } | undefined
+  if (claims && pathname === '/') {
+    const url = request.nextUrl.clone()
+    url.pathname = appMetadata?.role === 'admin' ? '/admin' : '/dashboard'
+    return NextResponse.redirect(url)
+  }
+
+  if (pathname.startsWith('/dashboard') && appMetadata?.role === 'admin') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/admin'
+    return NextResponse.redirect(url)
+  }
+
   if (pathname.startsWith('/admin') && appMetadata?.role !== 'admin') {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
@@ -40,5 +52,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/admin/:path*'],
+  matcher: ['/', '/dashboard/:path*', '/admin/:path*'],
 }

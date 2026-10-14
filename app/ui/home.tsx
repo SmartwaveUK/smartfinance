@@ -14,8 +14,8 @@ export default function Home() {
     e.preventDefault(); setLoading(true); setError('')
     const result = await signIn(email, password)
     setLoading(false)
-    if (result === 'demo' || result === null) router.push('/dashboard')
-    else setError(result)
+    if (result.destination) router.replace(result.destination)
+    else setError(result.error ?? 'Could not sign in.')
   }
   return <main className="landing">
     <nav><a className="brand" href="#top"><span>⌁</span> smartwave</a><div className="nav-links"><a href="#approach">Our approach</a><a href="#security">Security</a></div><a className="nav-login" href="#login">Client login →</a></nav>
