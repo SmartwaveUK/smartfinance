@@ -7,13 +7,6 @@
       "static/chunks/main-app-78098fa7c3457bb3.js",
       "static/chunks/app/_not-found/page-c5321c473d0d1727.js"
     ],
-    "/api/admin/clients/[id]/withdrawal-pins/route": [
-      "static/chunks/webpack-2aaa2da51fdb10f7.js",
-      "static/chunks/4bd1b696-c023c6e3521b1417.js",
-      "static/chunks/255-ce8c7c75002f810b.js",
-      "static/chunks/main-app-78098fa7c3457bb3.js",
-      "static/chunks/app/api/admin/clients/[id]/withdrawal-pins/route-dcde13e1c9707304.js"
-    ],
     "/layout": [
       "static/chunks/webpack-2aaa2da51fdb10f7.js",
       "static/chunks/4bd1b696-c023c6e3521b1417.js",
@@ -21,6 +14,13 @@
       "static/chunks/main-app-78098fa7c3457bb3.js",
       "static/css/ce521ff4e56f1b5d.css",
       "static/chunks/app/layout-8beb036481feb0e1.js"
+    ],
+    "/api/admin/clients/[id]/withdrawal-pins/route": [
+      "static/chunks/webpack-2aaa2da51fdb10f7.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-ce8c7c75002f810b.js",
+      "static/chunks/main-app-78098fa7c3457bb3.js",
+      "static/chunks/app/api/admin/clients/[id]/withdrawal-pins/route-dcde13e1c9707304.js"
     ],
     "/api/admin/clients/route": [
       "static/chunks/webpack-2aaa2da51fdb10f7.js",
@@ -41,7 +41,7 @@
       "static/chunks/4bd1b696-c023c6e3521b1417.js",
       "static/chunks/255-ce8c7c75002f810b.js",
       "static/chunks/main-app-78098fa7c3457bb3.js",
-      "static/css/a1973451b01d3464.css",
+      "static/css/0956b5d9e0043352.css",
       "static/chunks/44530001-6a14ce924906b4cd.js",
       "static/chunks/370-1cd2f82627355132.js",
       "static/chunks/app/admin/page-4ebe45a80c6dda99.js"
