@@ -30,6 +30,8 @@ export default function AdminWorkspace() {
     return data
   }
   useEffect(() => { request('GET').then((data) => { if (data?.clients?.length) { setClients(data.clients); setSelectedId(data.clients[0].id) } else setNotice('No client accounts exist yet.') }).catch((error) => setNotice(error instanceof Error ? error.message : 'Could not load client accounts.')) }, [])
+  // PINs are deliberately revealed only once and only for the active client.
+  useEffect(() => { setPinCodes(null) }, [selectedId])
   async function addClient(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const formElement = event.currentTarget
