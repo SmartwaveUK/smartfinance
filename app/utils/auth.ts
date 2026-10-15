@@ -37,7 +37,7 @@ export async function submitWithdrawal(amount: number, bank: string, iban: strin
   return error?.message ?? null
 }
 
-export async function withdrawalAction(payload: Record<string, unknown>): Promise<{ error?: string; stage?: string; id?: string; withdrawal?: { id: string; amount: number; currency: string; status: string; created_at: string } }> {
+export async function withdrawalAction(payload: Record<string, unknown>): Promise<{ error?: string; stage?: string; id?: string; withdrawal?: { id: string; amount: number; currency: string; status: string; created_at: string }; account?: { total_value: number; available_balance: number } }> {
   const supabase = getClient()
   if (!supabase) return { error: 'Supabase is not configured.' }
   const { data: { session } } = await supabase.auth.getSession()

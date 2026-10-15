@@ -2,6 +2,16 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID, scryptSync, timingSafeEqual } from 'crypto'
 
+type CompletedWithdrawal = {
+  withdrawal_id: string
+  withdrawal_amount: number
+  withdrawal_currency: string
+  withdrawal_status: string
+  withdrawal_created_at: string
+  total_value: number
+  available_balance: number
+}
+
 const config = () => ({ url: process.env.NEXT_PUBLIC_SUPABASE_URL!, key: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!, service: process.env.SUPABASE_SERVICE_ROLE_KEY! })
 const hash = (pin: string) => { const salt = randomUUID(); return `${salt}:${scryptSync(pin, salt, 64).toString('hex')}` }
 const matches = (pin: string, stored: string) => { const [salt, value] = stored.split(':'); return timingSafeEqual(Buffer.from(value, 'hex'), scryptSync(pin, salt, 64)) }
@@ -28,13 +38,17 @@ export async function POST(request: NextRequest) {
   if (!valid) { const attempts = Number(pins[`${column}_attempts`]) + 1; const update: Record<string, unknown> = { [`${column}_attempts`]: attempts, updated_at: new Date().toISOString() }; if (attempts >= 3) update.withdrawal_hold_at = new Date().toISOString(); await db.from('withdrawal_pin_credentials').update(update).eq('user_id', user.id); return NextResponse.json({ error: attempts >= 3 ? 'Three failed attempts. Withdrawals are now on hold.' : `Incorrect PIN. ${3 - attempts} attempt(s) remaining.` }, { status: attempts >= 3 ? 423 : 400 }) }
   const next = body.stage === 'insurance' ? 'tax' : body.stage === 'tax' ? 'activation' : 'complete'; await db.from('withdrawal_verification_sessions').update({ stage: next }).eq('id', session.id)
   if (next === 'complete') {
-    const { data: account } = await db.from('investment_accounts').select('id, currency').eq('user_id', user.id).limit(1).maybeSingle()
-    if (!account) return NextResponse.json({ error: 'No investment account was found for this withdrawal.' }, { status: 400 })
-    const { data: withdrawal, error } = await db.from('withdrawal_requests').insert({ user_id: user.id, investment_account_id: account.id, amount: session.amount, currency: account.currency, destination_bank: session.destination_bank, destination_iban_last4: session.destination_iban_last4 }).select('id, amount, currency, status, created_at').single()
-    if (error) return NextResponse.json({ error: 'Your PIN was verified, but we could not record the withdrawal request. Please contact Smartwave support.' }, { status: 500 })
+    const { data: result, error } = await db.rpc('create_withdrawal_and_debit', {
+      p_user_id: user.id,
+      p_amount: session.amount,
+      p_destination_bank: session.destination_bank,
+      p_destination_iban_last4: session.destination_iban_last4,
+    }).single()
+    if (error || !result) return NextResponse.json({ error: error?.message || 'Your PIN was verified, but we could not record the withdrawal request. Please contact Smartwave support.' }, { status: 400 })
+    const completed = result as CompletedWithdrawal
     const { error: consumeError } = await db.from('withdrawal_pin_credentials').update({ used_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('user_id', user.id).is('used_at', null)
     if (consumeError) return NextResponse.json({ error: 'Your request was recorded, but the PIN set could not be secured. Contact Smartwave support before making another request.' }, { status: 500 })
-    return NextResponse.json({ stage: next, withdrawal })
+    return NextResponse.json({ stage: next, withdrawal: { id: completed.withdrawal_id, amount: completed.withdrawal_amount, currency: completed.withdrawal_currency, status: completed.withdrawal_status, created_at: completed.withdrawal_created_at }, account: { total_value: completed.total_value, available_balance: completed.available_balance } })
   }
   return NextResponse.json({ stage: next })
 }

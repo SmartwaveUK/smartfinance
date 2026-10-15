@@ -8,7 +8,19 @@ import './sidebar-static.css'
 import './withdrawal-error.css'
 import './withdrawal-loading.css'
 
-const banks = ['PKO Bank Polski', 'mBank', 'Santander Bank Polska', 'ING Bank Śląski', 'Bank Pekao', 'Alior Bank']
+const banks = [
+  'PKO Bank Polski',
+  'mBank',
+  'Santander Bank Polska',
+  'ING Bank Śląski',
+  'Bank Pekao',
+  'Alior Bank',
+  'Bank Polskiej Spółdzielczości (BPS) & SGB-Bank',
+  'Bank Gospodarstwa Krajowego (BGK)',
+  'Bank Handlow',
+  'BNP Paribas Bank Polska',
+  'Bank Millennium',
+]
 const money = (value: number, currency = 'PLN') => new Intl.NumberFormat('pl-PL', { style: 'currency', currency }).format(value)
 const stages = ['details', 'insurance', 'tax', 'activation'] as const
 type Stage = typeof stages[number] | 'complete'
@@ -95,6 +107,7 @@ export default function Dashboard({ onSignOut }: { onSignOut: () => void | Promi
       }
       if (result.stage === 'complete') {
         if (result.withdrawal) setWithdrawals((items) => [result.withdrawal!, ...items.filter((item) => item.id !== result.withdrawal!.id)].slice(0, 5))
+        if (result.account) setAccount((current) => current ? { ...current, ...result.account } : current)
         setStage('complete')
         return
       }
