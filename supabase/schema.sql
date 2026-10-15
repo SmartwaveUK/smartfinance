@@ -21,7 +21,7 @@ create table public.investment_accounts (
   user_id uuid not null references auth.users(id) on delete cascade,
   account_name text not null,
   account_number text not null unique default ('SW-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12))),
-  currency char(3) not null default 'PLN',
+  currency char(3) not null default 'PLN' check (currency in ('PLN', 'EUR', 'USD', 'GBP')),
   available_balance numeric(14,2) not null default 0 check (available_balance >= 0),
   total_value numeric(14,2) not null default 0 check (total_value >= 0),
   created_at timestamptz not null default now()
@@ -41,7 +41,7 @@ create table public.withdrawal_requests (
   user_id uuid not null references auth.users(id) on delete restrict,
   investment_account_id uuid references public.investment_accounts(id) on delete restrict,
   amount numeric(14,2) not null check (amount > 0),
-  currency char(3) not null default 'PLN' check (currency = 'PLN'),
+  currency char(3) not null default 'PLN' check (currency in ('PLN', 'EUR', 'USD', 'GBP')),
   destination_bank text not null,
   destination_iban_last4 char(4) not null check (destination_iban_last4 ~ '^[0-9]{4}$'),
   status public.withdrawal_status not null default 'pending_review',
