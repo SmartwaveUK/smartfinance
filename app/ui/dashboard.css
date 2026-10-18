@@ -2,3 +2,5 @@
 .side-nav a{display:flex;align-items:center;min-height:38px}.side-nav .nav-unavailable{padding:11px 12px;color:#79958d;font-size:13px;cursor:default}.side-nav .nav-unavailable small{display:block;margin:3px 0 0 18px;font-size:9px;color:#66837b}
 .modal-backdrop{overflow-y:auto}.withdraw-modal{box-sizing:border-box;max-height:calc(100dvh - 40px);overflow-y:auto;margin:auto}.withdraw-modal::-webkit-scrollbar{width:8px}.withdraw-modal::-webkit-scrollbar-thumb{background:#b7c9c1;border-radius:999px}
 .withdraw-modal .steps{display:none}
+.withdrawal-progress{margin:-10px 0 24px}.withdrawal-progress>div{display:flex;justify-content:space-between;margin-bottom:8px;font-size:11px;color:#58716a}.withdrawal-progress b{color:#145d57}.withdrawal-progress i{display:block;overflow:hidden;height:6px;background:#e3ece7;border-radius:999px}.withdrawal-progress em{display:block;height:100%;background:#3c9a7c;border-radius:inherit;transition:width .45s ease}
+.section-heading{align-items:flex-start}

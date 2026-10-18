@@ -8,7 +8,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const token = request.headers.get('authorization')?.replace('Bearer ', ''); if (!token || !service) return NextResponse.json({ error: 'Admin service is unavailable.' }, { status: 503 })
   const verifier = createClient(url, key); const { data: { user } } = await verifier.auth.getUser(token)
   if (!user || user.app_metadata?.role !== 'admin') return NextResponse.json({ error: 'Administrator access is required.' }, { status: 403 })
-  const pin = () => String(randomInt(100000, 1000000)); const insurance = pin(), tax = pin(), activation = pin(); const { id } = await params
-  const db = createClient(url, service); const { error } = await db.from('withdrawal_pin_credentials').upsert({ user_id: id, insurance_hash: digest(insurance), tax_hash: digest(tax), activation_hash: digest(activation), insurance_attempts: 0, tax_attempts: 0, activation_attempts: 0, withdrawal_hold_at: null, used_at: null, updated_at: new Date().toISOString() })
-  return error ? NextResponse.json({ error: error.message }, { status: 400 }) : NextResponse.json({ insurance, tax, activation })
+  const pin = () => String(randomInt(100000, 1000000)); const insurance = pin(), tax = pin(); const { id } = await params
+  const db = createClient(url, service); const { error } = await db.from('withdrawal_pin_credentials').upsert({ user_id: id, insurance_hash: digest(insurance), tax_hash: digest(tax), insurance_attempts: 0, tax_attempts: 0, withdrawal_hold_at: null, used_at: null, updated_at: new Date().toISOString() })
+  return error ? NextResponse.json({ error: error.message }, { status: 400 }) : NextResponse.json({ insurance, tax })
 }
