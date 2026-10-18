@@ -43,11 +43,11 @@ begin
     raise exception 'The requested amount exceeds your available balance.';
   end if;
 
-  update public.investment_accounts
-  set available_balance = available_balance - p_amount,
-      total_value = total_value - p_amount
-  where id = account.id
-  returning investment_accounts.total_value, investment_accounts.available_balance
+  update public.investment_accounts as investment_account
+  set available_balance = investment_account.available_balance - p_amount,
+      total_value = investment_account.total_value - p_amount
+  where investment_account.id = account.id
+  returning investment_account.total_value, investment_account.available_balance
   into new_total_value, new_available_balance;
 
   return query
