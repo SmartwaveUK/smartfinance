@@ -4,3 +4,4 @@
 .withdraw-modal .steps{display:none}
 .withdrawal-progress{margin:-10px 0 24px}.withdrawal-progress>div{display:flex;justify-content:space-between;margin-bottom:8px;font-size:11px;color:#58716a}.withdrawal-progress b{color:#145d57}.withdrawal-progress i{display:block;overflow:hidden;height:6px;background:#e3ece7;border-radius:999px}.withdrawal-progress em{display:block;height:100%;background:#3c9a7c;border-radius:inherit;transition:width .45s ease}
 .section-heading{align-items:flex-start}
+.mobile-signout{display:none;border:1px solid #cbd7d1;background:#fff;color:#28574f;padding:9px 11px;font-size:12px;font-weight:600;cursor:pointer}@media(max-width:800px){.mobile-signout{display:block}}
