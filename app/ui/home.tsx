@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Home01Icon } from '@hugeicons/core-free-icons'
 import { signIn } from '../utils/auth'
+import { MobileMenu } from './mobile-menu'
 
 export default function Home() {
   const router = useRouter()
@@ -27,7 +28,7 @@ export default function Home() {
     else setError(result.error ?? 'Could not sign in.')
   }
   return <main className="landing">
-    <nav><a className={`brand ${reloading ? 'brand-reloading' : ''}`} href="/" onClick={reloadHome} aria-label="Reload Smartwave home after three seconds"><span><HugeiconsIcon icon={Home01Icon} size={16} strokeWidth={1.8}/></span> smartwave</a><div className="nav-links"><a href="/products">Products</a><a href="/about-us">About us</a><a href="#approach">Our approach</a><a href="#contact">Contact us</a><a href="/trust-security-compliance">Security</a></div><a className="nav-login" href="#login">Client login →</a></nav>
+    <nav><a className={`brand ${reloading ? 'brand-reloading' : ''}`} href="/" onClick={reloadHome} aria-label="Reload Smartwave home after three seconds"><span><HugeiconsIcon icon={Home01Icon} size={16} strokeWidth={1.8}/></span> smartwave</a><div className="nav-links"><a href="/products">Products</a><a href="/about-us">About us</a><a href="#approach">Our approach</a><a href="#contact">Contact us</a><a href="/trust-security-compliance">Security</a></div><a className="nav-login" href="#login">Client login →</a><MobileMenu links={[{ href: '/products', label: 'Products' }, { href: '/about-us', label: 'About us' }, { href: '#approach', label: 'Our approach' }, { href: '#contact', label: 'Contact us' }, { href: '/trust-security-compliance', label: 'Security' }]} loginHref="#login" /></nav>
     <section className="hero" id="top"><div className="hero-copy"><p className="eyebrow">UNITED KINGDOM · INVEST WITH CLARITY</p><h1>A more confident<br/><i>financial future.</i></h1><p className="intro">Smartwave Finance brings modern investment management and personal expertise together, so your money moves with purpose.</p><div className="hero-stats"><div><b>12.4%</b><span>Average annual return</span></div><div><b>40k+</b><span>Clients across Europe</span></div></div></div>
       <div className="orb-wrap"><div className="orb"><div className="orb-line line-one"/><div className="orb-line line-two"/><div className="orb-center">SW</div></div><p>Investment, in motion.</p></div></section>
     <section className="login-card" id="login"><div className="login-title"><p className="eyebrow">CLIENT PORTAL</p><h2>Welcome back.</h2><p>Sign in to review your portfolio and manage your funds.</p></div><form onSubmit={handleLogin}><label>Email address<input type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} required/></label><label>Password<input type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} required/></label>{error && <p className="form-error">{error}</p>}<button className="primary" disabled={loading}>{loading ? 'Signing in…' : 'Sign in to your account'} <span>→</span></button><p className="login-note">Accounts are created through your Smartwave adviser.</p></form></section>
