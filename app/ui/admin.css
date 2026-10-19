@@ -4,4 +4,4 @@
 .currency-note{margin:14px 0 -8px;color:#6d7f79;font-size:11px;line-height:1.45}
 .admin-signout{border:0;background:none;color:#c8d8d3;text-align:left;padding:15px 10px 0;font-size:13px;cursor:pointer}.admin-signout:hover{color:white}.admin-signout:disabled{opacity:.6;cursor:wait}
 .pin-codes dl{grid-template-columns:repeat(2,1fr)}
-.admin-mobile-signout{display:none;border:1px solid #145d57;background:white;color:#145d57;padding:12px 14px;font-weight:600;cursor:pointer}@media(max-width:900px){.admin-mobile-signout{display:block}}
+.admin-mobile-signout{display:none;border:1px solid #145d57;background:white;color:#145d57;padding:12px 14px;font-weight:600;cursor:pointer}.admin-header-actions{display:flex;align-items:center;gap:13px}@media(max-width:900px){.admin-mobile-signout{display:block}}@media(max-width:520px){.admin-header-actions{justify-content:space-between;width:100%;flex-wrap:wrap}}
